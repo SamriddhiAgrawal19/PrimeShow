@@ -5,6 +5,8 @@ import appStore from './appStore.svg'
 import screenImage from './screenImage.svg'
 import profile from './profile.png'
 import logo1 from './logo1.png'
+import harryPotterLogo from './harry-potter-logo.jpg'
+import Harry_potter_wordmark from './Harry_potter_wordmark.png.png'
 
 export const assets = {
     logo,
@@ -13,7 +15,9 @@ export const assets = {
     appStore,
     screenImage,
     profile,
-    logo1
+    logo1,
+    harryPotterLogo,
+    Harry_potter_wordmark
 }
 
 export const dummyTrailers = [
