@@ -35,7 +35,7 @@ const Navbar = () => {
         <Link to="/movies" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Movies</Link>
         <Link to="/theatres" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Theatres</Link>
         <Link to="/releases" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Releases</Link>
-        <Link to="/favourites" onClick={() => {scrollTo(0,0) , setMenuOpen(false)} }>Favourites</Link>
+        <Link to="/favourite" onClick={() => {scrollTo(0,0) , setMenuOpen(false)} }>Favourites</Link>
       </div>
 
       {/* Right Side (Search + Login) */}
