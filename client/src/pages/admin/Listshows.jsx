@@ -3,6 +3,7 @@ import { dummyShowsData } from '../../assets/assets';
 import Loading from '../../components/Loading';
 import Title from '../../components/admin/Title';
 import dateFormat from '../../lib/DateFormat';
+import BlurCircle from '../../components/BlurCircle';
 
 const Listshows = () => {
   const currency = import.meta.env.VITE_CURRENCY || "₹";
@@ -34,7 +35,6 @@ const Listshows = () => {
     }
   };
 
-  // ✅ useEffect must be outside of any function
   useEffect(() => {
     getAllShows();
   }, []);
@@ -42,8 +42,14 @@ const Listshows = () => {
   return !loading ? (
     <>
       <Title text1="List" text2="Shows" />
-      <div className="max-w-4xl mt-6 overflow-x-auto mx-auto">
-        <table className="w-full border-collapse rounded-md overflow-hidden">
+
+      {/* Container with blur circles */}
+      <div className="relative max-w-4xl mt-6 mx-auto overflow-x-auto">
+        {/* Decorative Blur Circles */}
+        <BlurCircle top="-20px" left="-20px" />
+        <BlurCircle bottom="-20px" right="-20px" />
+
+        <table className="w-full border-collapse rounded-md overflow-hidden relative z-10">
           <thead>
             <tr className="bg-primary/20 text-left text-white">
               <th className="p-2 font-medium pl-5">Movie name</th>

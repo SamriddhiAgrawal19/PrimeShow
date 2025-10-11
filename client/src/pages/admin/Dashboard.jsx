@@ -27,7 +27,7 @@ const Dashboard = () => {
     setDashboard({
       totalRevenue: data.totalRevenue,
       totalBookings: data.totalBookings,
-      totalUsers: data.totalUser || 0, // fixed key
+      totalUsers: data.totalUser || 0,
       activeShows: data.activeShows || [],
     });
     setLoading(false);
@@ -38,26 +38,10 @@ const Dashboard = () => {
   }, []);
 
   const dashboardCards = [
-    {
-      title: "Total Revenue",
-      value: `${currency} ${dashboard.totalRevenue}`,
-      icon: CircleDollarSignIcon,
-    },
-    {
-      title: "Total Bookings",
-      value: dashboard.totalBookings,
-      icon: ChartLineIcon,
-    },
-    {
-      title: "Active Shows",
-      value: dashboard.activeShows.length,
-      icon: PlayCircleIcon,
-    },
-    {
-      title: "Total Users",
-      value: dashboard.totalUsers,
-      icon: UserIcon,
-    },
+    { title: "Total Revenue", value: `${currency} ${dashboard.totalRevenue}`, icon: CircleDollarSignIcon },
+    { title: "Total Bookings", value: dashboard.totalBookings, icon: ChartLineIcon },
+    { title: "Active Shows", value: dashboard.activeShows.length, icon: PlayCircleIcon },
+    { title: "Total Users", value: dashboard.totalUsers, icon: UserIcon },
   ];
 
   if (loading) return <Loading />;
@@ -66,15 +50,20 @@ const Dashboard = () => {
     <>
       <Title text1="Admin" text2="Dashboard" />
 
+      {/* Subtle background blur circles */}
+      <BlurCircle top="-80px" left="-60px" size="250px" color="rgba(255,255,255,0.04)" />
+      <BlurCircle bottom="-100px" right="-80px" size="200px" color="rgba(255,255,255,0.03)" />
+
       {/* Dashboard Summary Cards */}
       <div className="relative mt-8">
-        <BlurCircle top="-100px" left="0" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
           {dashboardCards.map((item, index) => (
             <div
               key={index}
-              className="flex items-center justify-between px-6 py-5 bg-primary/10 border border-primary/40 rounded-xl text-white shadow-md hover:shadow-lg hover:-translate-y-1 transition duration-300"
+              className="flex items-center justify-between px-6 py-5 bg-primary/10 border border-primary/40 rounded-xl text-white shadow-md hover:shadow-lg hover:-translate-y-1 transition duration-300 relative overflow-hidden"
             >
+              {/* Optional subtle top-right accent blur for card */}
+              {index === 0 && <BlurCircle top="-10px" right="-10px" size="80px" color="rgba(255,255,255,0.03)" />}
               <div>
                 <h1 className="text-sm opacity-90">{item.title}</h1>
                 <p className="text-xl font-semibold mt-1">{item.value}</p>
@@ -86,22 +75,26 @@ const Dashboard = () => {
       </div>
 
       {/* Active Shows Section */}
-      <p className="mt-12 text-lg font-semibold text-white">Active Shows</p>
+      <p className="mt-12 text-lg font-semibold text-white relative z-10">Active Shows</p>
       <div className="relative flex flex-wrap gap-6 mt-5 max-w-5xl">
+        {/* Only two subtle blur circles behind the grid */}
+        <BlurCircle top="-40px" left="-30px" size="150px" color="rgba(255,255,255,0.02)" />
+        <BlurCircle bottom="-30px" right="-50px" size="120px" color="rgba(255,255,255,0.02)" />
+
         {dashboard.activeShows.map((show, index) => (
           <div
             key={index}
-            className="w-60 rounded-xl overflow-hidden pb-3 bg-primary/20 border border-primary/40 hover:-translate-y-1 transition duration-300 shadow-sm hover:shadow-md text-white"
+            className="w-60 rounded-xl overflow-hidden pb-3 bg-primary/20 border border-primary/40 hover:-translate-y-1 transition duration-300 shadow-sm hover:shadow-md relative"
           >
             <img
               src={show.movie.poster_path || "/placeholder.jpg"}
               alt={show.movie.title}
-              className="w-full object-cover h-65"
+              className="w-full object-cover h-65 brightness-50 hover:brightness-100 transition-all duration-300"
             />
-            <p className="font-semibold p-2 truncate">{show.movie.title}</p>
+            <p className="font-semibold p-2 truncate text-white">{show.movie.title}</p>
 
             <div className="flex items-center justify-between px-2">
-              <p className="text-lg font-bold">
+              <p className="text-lg font-bold text-white">
                 {currency} {show.showPrice}
               </p>
               <p className="flex items-center gap-1 text-sm text-gray-300 mt-1 pr-1">
@@ -110,9 +103,7 @@ const Dashboard = () => {
               </p>
             </div>
 
-            <p className="px-2 pt-2 text-sm text-gray-300">
-              {dateFormat(show.showDateTime)}
-            </p>
+            <p className="px-2 pt-2 text-sm text-gray-300">{dateFormat(show.showDateTime)}</p>
           </div>
         ))}
       </div>
