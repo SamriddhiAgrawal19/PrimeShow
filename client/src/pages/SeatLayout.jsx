@@ -127,7 +127,7 @@ const SeatLayout = () => {
             <div className="flex gap-16">
               {renderSeats('H', 1, 9)}
               {renderSeats('J', 1, 9)}
-            </div>
+            </div> 
           </div>
 
           {/* Proceed to Checkout Button */}

@@ -9,7 +9,7 @@ const Favourite= () => {
 
       <BlurCircle top = '150px' left = '0px'/>
       <BlurCircle top = '50px' right = '50px'/>
-      <h1 className = 'text-lg font-medium my-4'>Now Showing</h1>
+      <h1 className = 'text-lg font-medium my-4'>Your Favourite Movies</h1>
         {dummyShowsData.map((show) => (
           <MovieCard movie={show} key={show.id} />
         ))}
