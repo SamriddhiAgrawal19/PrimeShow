@@ -1,5 +1,5 @@
 import { Inngest } from "inngest";
-import User from "../models/User";
+import User from "../models/User.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "prime-show" });
@@ -26,17 +26,17 @@ const syncUserCreation = inngest.createFunction(
         }
 );
 const syncUserUpdation = inngest.createFunction(
-    {id : 'sync-user-form-clerk'},
+    {id : 'sync-user-update-clerk'},
     {event: 'clerk/user.updated'},
     async({event})=>{
-        const{id , first_name , last_name, email_addreses , image_url} = event.data;
+        const{id , first_name , last_name, email_addresses , image_url} = event.data;
         const userData = {
             _id : id,
             name : `${first_name} ${last_name}`,
-            email : email_addreses[0].email_address,
+            email : email_addresses[0].email_address,
             image : image_url
         }
-        await User.create(userData);
+        await User.findByIdAndUpdate({_id: id}, userData);
     }
 );
 
