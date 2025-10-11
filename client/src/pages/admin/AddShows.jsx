@@ -53,31 +53,31 @@ const AddShows = () => {
 
       <p className="mt-10 text-lg font-medium text-white">Now Playing Movies</p>
 
-      {/* Movies Grid */}
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 relative">
         {nowPlayingMovies.map((item, index) => (
           <div key={item._id || index} className="relative">
-            {/* Blur circles behind the card */}
             <BlurCircle top="-10px" left="-10px" />
             <BlurCircle bottom="-10px" right="-10px" />
 
             <div
-              className={`relative w-full cursor-pointer overflow-hidden rounded-lg transition-transform duration-300 hover:-translate-y-1 ${
+              className={`"w-60 rounded-xl overflow-hidden pb-3 bg-primary/5 border border-primary/40 hover:-translate-y-1 transition duration-300 shadow-sm hover:shadow-md relative" ${
                 selectedMovie === (item._id || index) ? "ring-2 ring-primary" : ""
               }`}
               onClick={() => setSelectedMovie(item._id || index)}
             >
-              <img
-                src={item.poster_path}
-                alt={item.title}
-                className="w-full h-64 object-cover brightness-50 hover:brightness-100 transition-all duration-300"
-              />
-              <div className="text-sm flex items-center justify-between p-2 bg-black/60 w-full absolute bottom-0 left-0">
-                <p className="flex items-center gap-1 text-gray-300">
-                  <StarIcon className="w-4 h-4 text-primary fill-primary" />
-                  {item.vote_average.toFixed(1) || "N/A"}
-                </p>
-                <p className="text-gray-300">{formatVotes(item.vote_count)} Votes</p>
+              <div className="relative">
+                <img
+                  src={item.poster_path}
+                  alt={item.title}
+                  className="w-full h-64 object-cover brightness-50 hover:brightness-100 transition-all duration-300"
+                />
+                <div className="text-sm flex items-center justify-between p-2 bg-black/60 w-full absolute bottom-0 left-0">
+                  <p className="flex items-center gap-1 text-gray-300">
+                    <StarIcon className="w-4 h-4 text-primary fill-primary" />
+                    {item.vote_average.toFixed(1) || "N/A"}
+                  </p>
+                  <p className="text-gray-300">{formatVotes(item.vote_count)} Votes</p>
+                </div>
               </div>
 
               {selectedMovie === (item._id || index) && (
@@ -93,7 +93,6 @@ const AddShows = () => {
         ))}
       </div>
 
-      {/* Show Price Input */}
       <div className="mt-8">
         <label className="block text-sm font-medium mb-2 text-white">Show price</label>
         <div className="inline-flex items-center gap-2 border border-gray-600 px-3 py-2 rounded-md">
@@ -108,7 +107,6 @@ const AddShows = () => {
         </div>
       </div>
 
-      {/* Date & Time Selection */}
       <div className="mt-6">
         <label className="block text-sm font-medium mb-2 text-white">Select Date & Time</label>
         <div className="inline-flex gap-2 border border-gray-600 p-2 rounded-lg bg-black/30 relative">
@@ -129,7 +127,6 @@ const AddShows = () => {
         </div>
       </div>
 
-      {/* Render Selected Details */}
       {selectedMovie && (
         <div className="mt-6 p-4 bg-black/40 rounded-md border border-gray-600 relative">
           <BlurCircle top="-10px" right="-10px" />
