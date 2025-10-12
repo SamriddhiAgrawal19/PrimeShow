@@ -6,7 +6,10 @@ import dotenv from "dotenv";
 import { serve } from "inngest/express";
 import { inngest, functions } from "./ingest/index.js";
 import { clerkMiddleware } from "@clerk/express";
-
+import showRouter from "./routes/showRoutes.js";
+import bookingRouter from "./routes/bookingRoutes.js";
+import AdminRouter from "./routes/AdminRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 dotenv.config(); 
 
 const app = express();
@@ -25,6 +28,10 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+app.use("/api/shows", showRouter);
+app.use("/api/booking", bookingRouter);
+app.use("/api/admin" , AdminRouter);
+app.use('/api/user' , userRouter);
 
 app.use(
   "/api/inngest",
