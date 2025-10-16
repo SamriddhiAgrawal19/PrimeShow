@@ -3,10 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import BlurCircle from "../components/BlurCircle";
 import { StarIcon, Heart } from "lucide-react";
 import timeFormat from "../lib/timeFormat";
-import DateSelect from "../components/DateSelect";
 import MovieCard from "../components/MovieCard";
 import Loading from "../components/Loading";
-import { dummyShowsData } from "../assets/assets"; // Dummy data for casts/recommended
+import { dummyShowsData } from "../assets/assets";
 import { useAppContext } from "../context/AppContext";
 
 const MovieDetails = () => {
@@ -18,7 +17,10 @@ const MovieDetails = () => {
   const [showMore, setShowMore] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch movie by ID from backend
+  const [selectedDateIndex, setSelectedDateIndex] = useState(null);
+  const [selectedTimeIndex, setSelectedTimeIndex] = useState(null);
+
+  // ✅ Fetch movie + showtimes
   const fetchMovieDetails = async () => {
     try {
       const { data } = await axios.get(`/api/shows/${id}`);
@@ -38,6 +40,23 @@ const MovieDetails = () => {
     }
   };
 
+  // ✅ Safe date formatter
+  const formatDate = (dateValue) => {
+    if (!dateValue) return "Invalid date";
+    try {
+      const [year, month, day] = dateValue.split("T")[0].split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch (e) {
+      console.error("Error formatting date:", dateValue, e);
+      return "Invalid date";
+    }
+  };
+
   useEffect(() => {
     fetchMovieDetails();
   }, [id]);
@@ -50,51 +69,95 @@ const MovieDetails = () => {
       </div>
     );
 
+  // Format dates and times
+  const datesArray = Array.isArray(show.dateTime)
+    ? show.dateTime.map((item) => ({
+        ...item,
+        formattedDate: formatDate(item.date),
+        times: Array.isArray(item.times)
+          ? item.times.map((s) => ({
+              ...s,
+              time: new Date(s.time).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            }))
+          : [],
+      }))
+    : [];
+
   const recommendedMovies = showMore
     ? dummyShowsData
-    : dummyShowsData.slice(0, 4); // First 4 recommended
+    : dummyShowsData.slice(0, 4);
+
+  // ✅ Handle "Book Now"
+  const handleBookNow = () => {
+    if (
+      selectedDateIndex !== null &&
+      selectedTimeIndex !== null &&
+      datesArray[selectedDateIndex] &&
+      datesArray[selectedDateIndex].times[selectedTimeIndex]
+    ) {
+      const selectedDate = datesArray[selectedDateIndex].date;
+      const selectedTime = datesArray[selectedDateIndex].times[selectedTimeIndex].time;
+      navigate(`/movies/${id}/book`, {
+        state: { date: selectedDate, time: selectedTime },
+      });
+    }
+  };
 
   return (
     <div className="px-6 md:px-16 lg:px-40 pt-10 md:pt-20 mt-20 text-white">
+      {/* Movie Details */}
       <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
         {/* Poster */}
         <div className="relative">
-          <img
-            src={show.movie.poster_path}
-            alt={show.movie.title}
-            className="rounded-xl h-104 max-w-70 object-cover"
-          />
+          {show.movie?.poster_path ? (
+            <img
+              src={show.movie.poster_path}
+              alt={show.movie.title}
+              className="rounded-xl h-104 max-w-70 object-cover"
+            />
+          ) : (
+            <div className="w-70 h-104 bg-gray-800 rounded-xl flex items-center justify-center">
+              <span className="text-gray-400">No Poster</span>
+            </div>
+          )}
           <BlurCircle top="-100px" left="-100px" />
         </div>
 
-        {/* Details */}
+        {/* Movie Info */}
         <div className="flex flex-col gap-4 relative">
           <p className="text-primary font-semibold">ENGLISH</p>
-          <h1 className="text-4xl font-bold max-w-96">{show.movie.title}</h1>
+          <h1 className="text-4xl font-bold max-w-96">
+            {show.movie?.title || "Untitled"}
+          </h1>
 
           {/* Rating */}
-          <div className="flex items-center gap-2 text-gray-300">
-            <StarIcon className="w-5 h-5 text-primary" />
-            <span>{show.movie.vote_average.toFixed(1)}</span>
-            <span>User Rating</span>
-          </div>
+          {show.movie?.vote_average && (
+            <div className="flex items-center gap-2 text-gray-300">
+              <StarIcon className="w-5 h-5 text-primary" />
+              <span>{show.movie.vote_average.toFixed(1)}</span>
+              <span>User Rating</span>
+            </div>
+          )}
 
           {/* Overview */}
           <p className="text-gray-400 mt-2 text-sm leading-tight max-w-xl">
-            {show.movie.overview}
+            {show.movie?.overview || "No description available."}
           </p>
 
           {/* Runtime & Genre */}
           <p className="text-gray-300">
-            {timeFormat(show.movie.runtime)} •{" "}
-            {new Date(show.movie.release_date).getFullYear()} •{" "}
-            {show.movie.genres?.slice(0, 2).join(" | ")}
-
+            {show.movie?.runtime ? timeFormat(show.movie.runtime) : "N/A"} •{" "}
+            {show.movie?.release_date
+              ? new Date(show.movie.release_date).getFullYear()
+              : "----"}{" "}
+            • {show.movie?.genres?.slice(0, 2).join(" | ") || "N/A"}
           </p>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-4 mt-6">
-            {/* Watch Trailer */}
             <div
               onClick={() => navigate(`/movies/${id}/trailer`)}
               className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-md cursor-pointer"
@@ -105,14 +168,18 @@ const MovieDetails = () => {
               <span className="font-medium">Watch Trailer</span>
             </div>
 
-            {/* Buy Tickets */}
-            <a href="#dateSelect" className="scroll-smooth">
-              <button className="px-4 py-2 bg-primary hover:bg-primary-dull transition rounded-md font-medium">
-                Buy Tickets
-              </button>
-            </a>
+            <button
+              onClick={handleBookNow}
+              disabled={selectedDateIndex === null || selectedTimeIndex === null}
+              className={`px-4 py-2 rounded-md font-medium transition ${
+                selectedDateIndex !== null && selectedTimeIndex !== null
+                  ? "bg-primary hover:bg-primary-dull text-black"
+                  : "bg-gray-700 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Book Now
+            </button>
 
-            {/* Heart Icon */}
             <button className="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full hover:bg-gray-700 transition">
               <Heart className="w-5 h-5" />
             </button>
@@ -120,7 +187,7 @@ const MovieDetails = () => {
         </div>
       </div>
 
-      {/* Cast Section (dummy for now) */}
+      {/* Cast Section */}
       <p className="text-gray-300 mt-8">Your Favourite Cast</p>
       <div className="flex gap-6 overflow-x-auto no-scrollbar mt-4 pb-4">
         <div className="flex items-center gap-4 w-max px-4">
@@ -140,8 +207,48 @@ const MovieDetails = () => {
         </div>
       </div>
 
-      {/* Date Select */}
-      <DateSelect dateTime={show.dateTime} movieId={id} />
+      {/* Date & Time Selection */}
+      <div id="dateSelect" className="mt-10">
+        <h2 className="text-lg font-semibold mb-3">Select Date & Time</h2>
+        {/* Dates */}
+        <div className="flex flex-wrap gap-3 mb-4">
+          {datesArray.map((dateObj, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setSelectedDateIndex(index);
+                setSelectedTimeIndex(null); // reset time when changing date
+              }}
+              className={`px-4 py-2 rounded-md font-medium transition ${
+                selectedDateIndex === index
+                  ? "bg-primary text-black"
+                  : "bg-gray-800 hover:bg-gray-700 text-white"
+              }`}
+            >
+              {dateObj.formattedDate}
+            </button>
+          ))}
+        </div>
+
+        {/* Times */}
+        {selectedDateIndex !== null && datesArray[selectedDateIndex]?.times.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {datesArray[selectedDateIndex].times.map((t, i) => (
+              <button
+                key={i}
+                onClick={() => setSelectedTimeIndex(i)}
+                className={`px-3 py-1 rounded-md text-sm transition ${
+                  selectedTimeIndex === i
+                    ? "bg-primary text-black"
+                    : "bg-gray-800 hover:bg-gray-700 text-white"
+                }`}
+              >
+                {t.time}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Recommended Section */}
       <p className="text-lg font-medium mt-20 mb-4">You may also like</p>
@@ -151,7 +258,6 @@ const MovieDetails = () => {
         ))}
       </div>
 
-      {/* Show More / Show Less Button */}
       {dummyShowsData.length > 4 && (
         <div className="flex justify-center mt-8">
           <button

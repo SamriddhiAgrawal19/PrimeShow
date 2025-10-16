@@ -51,13 +51,16 @@ export const addShow = async (req, res) => {
         const [hours, minutes] = time.split(":").map(Number);
         const showDateTime = new Date(year, month - 1, day, hours, minutes);
         showsToCreate.push({
-          movie: movie._id,
+          movieId : movie._id,
           showDateTime,
           showPrice,
           occupiedSeats: {},
         });
       });
     });
+
+    //console.log(showsToCreate);
+    
 
     if (showsToCreate.length > 0) {
       await Show.insertMany(showsToCreate);
@@ -85,8 +88,8 @@ export const getShows = async (req, res) => {
       let movieData = null;
 
       // Try to populate movie, fallback if not found
-      if (show.movie) {
-        movieData = await Movie.findById(show.movie).lean();
+      if (show.movieId) {
+        movieData = await Movie.findById(show.movieId).lean();
       }
 
       const movieId = movieData?._id?.toString() || `unlinked-${show._id}`;
@@ -117,39 +120,54 @@ export const getShows = async (req, res) => {
   }
 };
 
-
 export const getShow = async (req, res) => {
   try {
     const { movieId } = req.params;
-    const shows = await Show.find({ movie: movieId, showDateTime: { $gte: new Date() } })
-      .sort({ showDateTime: 1 });
 
+    // Fetch upcoming shows
+    const shows = await Show.find({
+      movieId : movieId,
+      showDateTime: { $gte: new Date() }
+    })
+
+    //.log(shows)
+
+    // Fetch movie details
     const movie = await Movie.findById(movieId);
     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
 
-    const dateTime = {};
+    // Group shows by date
+    const datesArray = [];
+
     shows.forEach((show) => {
-      const date = show.showDateTime.toISOString().split('T')[0];
-      if (!dateTime[date]) {
-        dateTime[date] = [];
+      // Ensure showDateTime is a Date object
+      const showDate = new Date(show.showDateTime);
+
+
+      const dateStr = showDate.toISOString().split("T")[0]; // YYYY-MM-DD
+
+      let dateObj = datesArray.find((d) => d.date === dateStr);
+      if (!dateObj) {
+        dateObj = { date: dateStr, times: [] };
+        datesArray.push(dateObj);
       }
-      dateTime[date].push({
-        time: show.showDateTime,
+
+      dateObj.times.push({
+        time: showDate.toISOString(), // use ISO for now
         showId: show._id,
         showPrice: show.showPrice,
         occupiedSeats: show.occupiedSeats,
       });
     });
 
-    res.json({ success: true, movie, dateTime });
-  } catch (err) {
-    console.error("getShow error:", err);
-    res.status(500).json({
-      message: "Failed to get show",
-      error: err.message,
-      stack: err.stack,
-    });
+    console.log(datesArray);
+    
+
+    return res.json({ success: true, movie, dateTime: datesArray });
+  } catch (error) {
+    console.error("Error in getShow:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

@@ -18,40 +18,40 @@ const checkSeatsAvailability = async (showId, selectedSeats) => {
     }
 }
 
-export const createBooking = async(req , res)=>{
-    try{
-        const {userId} = req.auth;
-        const {showId, selectedSeats } = req.body;
-        const {origin} = req.headers;
-        if(!showId || !selectedSeats || selectedSeats.length === 0){
-            return res.status(400).json({ message: "showId and selectedSeats are required" });
-        }
-        const isAvailable = await checkSeatsAvailability(showId, selectedSeats);
-        if(!isAvailable){
-            return res.status(400).json({ message: "Selected seats are not available" });
-        }
-        const showData = await Show.findById(showId).populate('movie');
-        const booking = new Booking({
-            user: userId,
-            show: showId,
-            bookedSeats: selectedSeats,
-            amount: showData.showPrice * selectedSeats.length,
-        });
-        selectedSeats.map((seat)=>{
-            showData.occupiedSeats[seat] = userId;
-        })
-        showData.markModified('occupiedSeats');
-        await showData.save();
+export const createBooking = async (req, res) => {
+  try {
+    const auth = req.auth(); // ✅ call as function
+    const userId = auth.userId;
 
-        //Stripe payment integration can be added here
-        res.json({success : true , message : "Seats booked successfully"});
-        
-        res.status(201).json({ message: "Booking created successfully", booking });
-    }catch(err){
-        console.error("createBooking error:", err);
-        res.status(500).json({ message: "Internal server error" });
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-}
+
+    const { showId, selectedSeats } = req.body;
+
+    if (!showId || !selectedSeats?.length) {
+      return res.status(400).json({ success: false, message: "Missing data" });
+    }
+
+    // Check if show exists
+    const show = await Show.findById(showId);
+    if (!show) {
+      return res.status(404).json({ success: false, message: "Show not found" });
+    }
+
+    // Create booking
+    const booking = await Booking.create({
+      user: userId,
+      show: showId,
+      bookedSeats: selectedSeats,
+    });
+
+    return res.json({ success: true, booking });
+  } catch (err) {
+    console.error("createBooking error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 export const getOccupiedSeats = async(req , res)=>{
     try{

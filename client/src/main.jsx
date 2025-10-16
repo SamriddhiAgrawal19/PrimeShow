@@ -13,7 +13,7 @@ if (!PUBLISHABLE_KEY) {
 }
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+ 
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <BrowserRouter>
         <AppProvider>   {/* ✅ Wrap your app here */}
@@ -21,5 +21,5 @@ createRoot(document.getElementById("root")).render(
         </AppProvider>
       </BrowserRouter>
     </ClerkProvider>
-  </StrictMode>
+  
 );
