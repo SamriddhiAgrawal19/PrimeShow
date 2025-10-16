@@ -16,7 +16,7 @@ const MovieCard = ({ movie }) => {
     scrollTo(0, 0);
   }}
         className="rounded-lg h-56 w-full object-cover object-center cursor-pointer"
-        src={movie.poster_path}
+        src={movie.backdrop_path}
         alt={movie.title}
       />
 

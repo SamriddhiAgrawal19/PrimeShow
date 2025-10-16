@@ -34,27 +34,32 @@ export const getUserBookings = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-export const addFavourite = async(req, res)=>{
-    try{
-        const {movieId} = req.body;
+export const addFavourite = async (req, res) => {
+  try {
+    const { movieId } = req.body;
     const userId = req.auth().userId;
 
     const user = await clerkClient.users.getUser(userId);
-    if(!user.privateMetadata.favourites){
-        user.privateMetadata.favourites = []
-    }
-    if(!user.privateMetadata.favourites.includes(movieId)){
-        user.privateMetadata.favourites.push(movieId);
-    }
-    await clerkClient.users.updateUserMetadata(userId , {privateMetaData})
-    res.json({success : true , message : "Favourites added successfully"});
 
-    }catch(err){
-        console.log(err.message);
+    if (!user.privateMetadata.favourites) {
+      user.privateMetadata.favourites = [];
     }
-    
 
-}
+    if (!user.privateMetadata.favourites.includes(movieId)) {
+      user.privateMetadata.favourites.push(movieId);
+    }
+
+    await clerkClient.users.updateUserMetadata(userId, {
+      privateMetadata: user.privateMetadata
+    });
+
+    res.json({ success: true, message: "Favourites added successfully" });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 
 export const updateFavourite = async(req, res)=>{
     try{
@@ -93,3 +98,28 @@ export const getFavourites = async(req, res) =>{
         res.json({success : false , message : err.message});
     }
 }
+export const removeFavourite = async (req, res) => {
+  try {
+    const { movieId } = req.body;
+    const userId = req.auth().userId;
+
+    const user = await clerkClient.users.getUser(userId);
+
+    if (!user.privateMetadata.favourites) {
+      user.privateMetadata.favourites = [];
+    }
+
+    user.privateMetadata.favourites = user.privateMetadata.favourites.filter(
+      (id) => id !== movieId
+    );
+
+    await clerkClient.users.updateUserMetadata(userId, {
+      privateMetadata: user.privateMetadata,
+    });
+
+    res.json({ success: true, message: "Movie removed from favourites" });
+  } catch (err) {
+    console.error("removeFavourite error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

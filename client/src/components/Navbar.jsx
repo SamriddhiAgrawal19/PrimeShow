@@ -1,15 +1,39 @@
 import { MenuIcon, SearchIcon, XIcon,TicketPlus } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
+
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const{user} = useUser();
+  const { user } = useUser();
+  const { axios, getToken } = useAppContext();
+  const [hasFavourites, setHasFavourites] = useState(false);
   const{openSignIn} = useClerk();
   const navigate = useNavigate();
+
+   useEffect(() => {
+    const checkFavourites = async () => {
+      if (!user) return;
+      try {
+        const token = await getToken();
+        const { data } = await axios.get("/api/user/favourites", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data.success && data.movies.length > 0) setHasFavourites(true);
+        else setHasFavourites(false);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    checkFavourites();
+  }, [user]);
+
+  
+
 
   return (
     <div className="fixed top-0 left-0 z-50 w-full flex items-center justify-between px-6 md:px-16 lg:px-36 py-5">
@@ -35,7 +59,7 @@ const Navbar = () => {
         <Link to="/movies" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Movies</Link>
         <Link to="/" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Theatres</Link>
         <Link to="/" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Releases</Link>
-        <Link to="/favourite" onClick={() => {scrollTo(0,0) , setMenuOpen(false)} }>Favourites</Link>
+       {hasFavourites && <Link to="/favourite" onClick={() => {scrollTo(0,0) , setMenuOpen(false)} }>Favourites</Link>}
       </div>
 
       {/* Right Side (Search + Login) */}
