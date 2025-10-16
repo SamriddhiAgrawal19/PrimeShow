@@ -2,21 +2,30 @@ import { clerkClient } from "@clerk/express";
 import Booking from "../models/bookings.js";
 import Movie from "../models/Movie.js";
 
-export const getUserBookings = async(req , res)=>{
-    try{
-        const user = req.auth().userId;
+export const getUserBookings = async (req, res) => {
+  try {
+    const auth = req.auth();
+    const userId = auth?.userId;
+    console.log("User ID:", userId);
 
-        const bookings = await Booking.find({user}).populate({
-            path : "show" ,
-            populate : {path : "movie"}
-        
-        }).sort({createdAt : -1})
-        res.json({success : true , bookings})
-    }catch(err){
-        console.log(err.message);
-        res.json({success : false , message : err.message});
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-}
+
+    const bookings = await Booking.find({ user: userId })
+      .populate({
+        path: "show",
+        populate: { path: "movie" },
+      })
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, bookings });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 
 export const addFavourite = async(req, res)=>{
     try{

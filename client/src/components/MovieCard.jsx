@@ -10,12 +10,13 @@ const MovieCard = ({ movie }) => {
     <div className="flex flex-col justify-between p-3 bg-gray-800 rounded-lg hover:-translate-y-1 transition duration-300 w-[260px]">
       {/* Movie Poster */}
       <img
-        onClick={() => {
-          navigate(`/movie/${movie.id}`);
-          scrollTo(0, 0);
-        }}
+         onClick={() => {
+    const movieId = movie._id;
+    navigate(`/movie/${movieId}`);
+    scrollTo(0, 0);
+  }}
         className="rounded-lg h-56 w-full object-cover object-center cursor-pointer"
-        src={movie.backdrop_path}
+        src={movie.poster_path}
         alt={movie.title}
       />
 
@@ -32,7 +33,7 @@ const MovieCard = ({ movie }) => {
       {/* Bottom Row */}
       <div className="flex items-center justify-between mt-4 pb-3">
         <button  onClick={() => {
-          navigate(`/movie/${movie.id}`);
+           navigate(`/movie/${movie._id}`);
           scrollTo(0, 0);
         }} className="px-4 py-2 bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer">
           Buy Tickets

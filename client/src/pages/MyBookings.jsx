@@ -1,26 +1,40 @@
 import React, { useState, useEffect } from "react";
-import { dummyBookingData } from "../assets/assets";
 import BlurCircle from "../components/BlurCircle";
 import Loading from "../components/Loading";
 import timeFormat from "../lib/timeFormat";
 import dateFormat from "../lib/DateFormat";
+import { useAppContext } from "../context/AppContext";
+import { toast } from "react-hot-toast";
 
 const MyBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
+  const { axios } = useAppContext();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const getMyBookings = async () => {
-    // Simulate fetching data
-    setBookings(dummyBookingData);
-    setLoading(false);
+    try {
+      const { data } = await axios.get("/api/user/bookings");
+      if (data.success) {
+        setBookings(data.bookings);
+      } else {
+        toast.error("Failed to fetch bookings");
+      }
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     getMyBookings();
   }, []);
 
-  return !loading ? (
+  if (loading) return <Loading />;
+
+  return (
     <div className="relative px-6 md:px-16 lg:px-40 pt-32 md:pt-40 min-h-[80vh]">
       <BlurCircle top="100px" left="100px" />
       <BlurCircle bottom="0px" left="600px" />
@@ -81,8 +95,6 @@ const MyBookings = () => {
         <p className="text-gray-400 mt-4">No bookings found.</p>
       )}
     </div>
-  ) : (
-    <Loading />
   );
 };
 

@@ -15,6 +15,7 @@ import Dashboard from './pages/admin/Dashboard'
 import AddShows from './pages/admin/AddShows'
 import ListBooking from './pages/admin/ListBooking'
 import Listshows from './pages/admin/Listshows'
+//import TestToken from './components/testToken'
 
 const App = () => {
   const isAdminRoute = useLocation().pathname.startsWith('/admin');

@@ -1,4 +1,4 @@
-import { User } from "@clerk/express";
+import User from "../models/User.js";
 import Booking from "../models/bookings.js";
 import Show from "../models/Show.js";
 
@@ -7,27 +7,26 @@ export const isAdmin = (req, res)=>{
     res.json({success : true , isAdmin : true});
 }
 
-export const getDashboardData = async(req, res)=>{
-    try{
-        const bookings = await Booking.find({isPaid : true});
-        const activeShows = await Show.find({showDateTime : {$gte : new Date()}}).poplulate('movie');
+export const getDashboardData = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ isPaid: true });
+    const activeShows = await Show.find({ showDateTime: { $gte: new Date() } }).populate('movie');
 
-        const totalUser = await User.countDocuments();
+    const totalUser = await User.countDocuments();
 
-        const dashboardData = {
-            totalBookings : bookings.length,
-            totalRevenue : bookings.reduce((acc , booking)=> acc + booking.amount , 0),
-            activeShows ,
-            totalUser
+    const dashboardData = {
+      totalBookings: bookings.length,
+      totalRevenue: bookings.reduce((acc, booking) => acc + (booking.amount || 0), 0),
+      activeShows: activeShows || [],
+      totalUser: totalUser || 0,
+    };
 
-        }
-        res.json({success : true , dashboardData});
-
-    }catch(err){
-        console.error(err);
-        res.json({success : false , message : "Internal Server Error"});
-    }
-}
+    res.json({ success: true, dashboardData });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 export const getAllShows = async(req, res)=>{
     try{

@@ -1,37 +1,52 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { dummyDateTimeData, dummyShowsData, assets } from "../assets/assets";
+import { assets } from "../assets/assets";
 import { ClockIcon, ArrowRight } from "lucide-react";
 import Loading from "../components/Loading";
 import BlurCircle from "../components/BlurCircle";
 import { toast } from "react-hot-toast";
 import isoTimeFormat from "../components/isoTimeFormat";
+import { useAppContext } from "../context/AppContext";
 
 const SeatLayout = () => {
   const { id, date } = useParams();
   const navigate = useNavigate();
+  const { axios } = useAppContext();
 
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [show, setShow] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch show details from backend
   const getShow = async () => {
-    const foundShow = dummyShowsData.find((show) => show._id === id);
-    if (foundShow) {
-      setShow({
-        movie: foundShow,
-        dateTime: dummyDateTimeData,
-      });
+    try {
+      const { data } = await axios.get(`/api/shows/${id}`);
+      if (data.success) {
+        setShow({
+          movie: data.movie,
+          dateTime: data.dateTime,
+        });
+      } else {
+        toast.error("Show not found");
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch show");
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    getShow();
+  }, [id]);
+
   const handleSeatClick = (seatId) => {
-    if (!selectedTime) {
-      return toast("Please select time first");
-    }
+    if (!selectedTime) return toast.error("Please select a time first");
 
     if (!selectedSeats.includes(seatId) && selectedSeats.length >= 5) {
-      return toast("You can only select up to 5 seats");
+      return toast.error("You can only select up to 5 seats");
     }
 
     setSelectedSeats((prev) =>
@@ -40,6 +55,34 @@ const SeatLayout = () => {
         : [...prev, seatId]
     );
   };
+
+  const handleBooking = async () => {
+    if (!selectedTime) return toast.error("Please select a show time");
+    if (selectedSeats.length === 0) return toast.error("Please select at least one seat");
+
+    try {
+      const { data } = await axios.post("/api/booking/create", {
+        showId: selectedTime.showId,  // ✅ Correct MongoDB ObjectId
+        selectedSeats,
+      });
+
+      if (data.success) {
+        toast.success("Booking created successfully!");
+        navigate("/my-bookings");
+      }
+    } catch (err) {
+      console.error("Booking error:", err);
+      toast.error(err.response?.data?.message || "Booking failed");
+    }
+  };
+
+  if (loading) return <Loading />;
+  if (!show)
+    return (
+      <div className="flex items-center justify-center h-screen text-white">
+        Show not found
+      </div>
+    );
 
   const renderSeats = (row, start, end) => (
     <div key={`${row}-${start}`} className="flex gap-2">
@@ -61,12 +104,6 @@ const SeatLayout = () => {
     </div>
   );
 
-  useEffect(() => {
-    getShow();
-  }, [id]);
-
-  if (!show) return <Loading />;
-
   return (
     <div className="flex flex-col md:flex-row px-6 md:px-16 lg:px-40 py-20 md:pt-32 text-white">
       {/* Sidebar - Timings */}
@@ -76,7 +113,12 @@ const SeatLayout = () => {
           {show.dateTime[date]?.map((item, index) => (
             <div
               key={index}
-              onClick={() => setSelectedTime(item)}
+              onClick={() =>
+                setSelectedTime({
+                  ...item,
+                  showId: item.showId, // ✅ attach correct MongoDB showId
+                })
+              }
               className={`flex items-center gap-2 px-6 py-2 w-max rounded-r-md cursor-pointer transition-all ${
                 selectedTime?.time === item.time
                   ? "bg-primary text-white font-semibold"
@@ -99,40 +141,33 @@ const SeatLayout = () => {
         <p className="text-gray-400 text-sm mb-6">SCREEN SIDE</p>
 
         <div className="flex flex-col items-center text-gray">
-          
-          {/* A and B Rows */}
           <div className="flex flex-col gap-2 mb-12">
-            {renderSeats('A', 1, 9)}
-            {renderSeats('B', 1, 9)}
+            {renderSeats("A", 1, 9)}
+            {renderSeats("B", 1, 9)}
           </div>
-
-          {/* C, D, E, F Rows */}
           <div className="flex flex-col gap-2 mb-12">
             <div className="flex gap-16">
-              {renderSeats('C', 1, 9)}
-              {renderSeats('E', 1, 9)}
+              {renderSeats("C", 1, 9)}
+              {renderSeats("E", 1, 9)}
             </div>
             <div className="flex gap-16">
-              {renderSeats('D', 1, 9)}
-              {renderSeats('F', 1, 9)}
+              {renderSeats("D", 1, 9)}
+              {renderSeats("F", 1, 9)}
             </div>
           </div>
-
-          {/* G, H, I, J Rows */}
           <div className="flex flex-col gap-2 mb-12">
             <div className="flex gap-16">
-              {renderSeats('G', 1, 9)}
-              {renderSeats('I', 1, 9)}
+              {renderSeats("G", 1, 9)}
+              {renderSeats("I", 1, 9)}
             </div>
             <div className="flex gap-16">
-              {renderSeats('H', 1, 9)}
-              {renderSeats('J', 1, 9)}
-            </div> 
+              {renderSeats("H", 1, 9)}
+              {renderSeats("J", 1, 9)}
+            </div>
           </div>
 
-          {/* Proceed to Checkout Button */}
           <button
-            onClick={() => navigate("/my-bookings")}
+            onClick={handleBooking}
             className="flex items-center gap-2 bg-primary px-6 py-3 rounded-full text-white font-semibold mt-8 hover:bg-primary/90 transition"
           >
             Proceed to Checkout

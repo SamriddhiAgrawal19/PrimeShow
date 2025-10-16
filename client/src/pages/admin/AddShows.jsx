@@ -3,8 +3,11 @@ import { dummyShowsData } from "../../assets/assets";
 import Title from "../../components/admin/Title";
 import { CheckIcon, StarIcon } from "lucide-react";
 import BlurCircle from "../../components/BlurCircle";
+import { useAppContext } from "../../context/AppContext";
+import { toast } from "react-hot-toast";
 
 const AddShows = () => {
+  const { axios, getToken, user } = useAppContext();
   const currency = import.meta.env.VITE_CURRENCY || "$";
   const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -12,8 +15,15 @@ const AddShows = () => {
   const [dateTimeInput, setDateTimeInput] = useState("");
   const [showPrice, setShowPrice] = useState(0);
 
+  // Fetch movies from DB
   const fetchNowPlayingMovies = async () => {
-    setNowPlayingMovies(dummyShowsData);
+    try {
+      const { data } = await axios.get("/api/shows/now-playing");
+      if (data.success) setNowPlayingMovies(data.movies);
+    } catch (error) {
+      console.log("Error Fetching Movies", error);
+      toast.error("Failed to fetch movies");
+    }
   };
 
   const formatVotes = (votes) => {
@@ -41,6 +51,48 @@ const AddShows = () => {
       }
       return { ...prev, [date]: updatedTimes };
     });
+  };
+
+  const handleAddShow = async () => {
+    if (!selectedMovie) return toast.error("Please select a movie!");
+    if (Object.keys(dateTimeSelection).length === 0)
+      return toast.error("Please add at least one date & time!");
+    if (!showPrice || showPrice <= 0)
+      return toast.error("Please enter a valid show price!");
+
+    const showsInput = Object.entries(dateTimeSelection).map(([date, times]) => ({
+      date,
+      time: times,
+    }));
+
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(
+        "/api/shows/add",
+        {
+          movieId: selectedMovie,
+          showsInput,
+          showPrice,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (data.success) {
+        toast.success("Show added successfully!");
+        setSelectedMovie(null);
+        setDateTimeSelection({});
+        setDateTimeInput("");
+        setShowPrice(0);
+        fetchNowPlayingMovies();
+      } else {
+        toast.error("Failed to add show: " + data.message);
+      }
+    } catch (err) {
+      console.error("Add show error:", err);
+      toast.error("Error adding show. Check console.");
+    }
   };
 
   useEffect(() => {
@@ -156,7 +208,10 @@ const AddShows = () => {
             <span className="text-gray-300">Show Price:</span> {currency} {showPrice || 0}
           </p>
 
-          <button className="bg-primary px-4 py-2 rounded-md text-white hover:brightness-90 transition">
+          <button
+            onClick={handleAddShow}
+            className="bg-primary px-4 py-2 rounded-md text-white hover:brightness-90 transition"
+          >
             Add Show
           </button>
         </div>
