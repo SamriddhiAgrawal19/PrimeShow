@@ -33,8 +33,8 @@ const Navbar = () => {
         />
         <Link to="/" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Home</Link>
         <Link to="/movies" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Movies</Link>
-        <Link to="/theatres" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Theatres</Link>
-        <Link to="/releases" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Releases</Link>
+        <Link to="/" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Theatres</Link>
+        <Link to="/" onClick={() => {scrollTo(0,0) , setMenuOpen(false)}}>Releases</Link>
         <Link to="/favourite" onClick={() => {scrollTo(0,0) , setMenuOpen(false)} }>Favourites</Link>
       </div>
 

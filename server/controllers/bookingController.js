@@ -27,7 +27,7 @@ export const createBooking = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const { showId, selectedSeats } = req.body;
+    const { showId, selectedSeats , amount} = req.body;
 
     if (!showId || !selectedSeats?.length) {
       return res.status(400).json({ success: false, message: "Missing data" });
@@ -44,6 +44,7 @@ export const createBooking = async (req, res) => {
       user: userId,
       show: showId,
       bookedSeats: selectedSeats,
+      amount : Number(amount)
     });
 
     return res.json({ success: true, booking });

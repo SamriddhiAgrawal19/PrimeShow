@@ -92,19 +92,14 @@ const MovieDetails = () => {
 
   // ✅ Handle "Book Now"
   const handleBookNow = () => {
-    if (
-      selectedDateIndex !== null &&
-      selectedTimeIndex !== null &&
-      datesArray[selectedDateIndex] &&
-      datesArray[selectedDateIndex].times[selectedTimeIndex]
-    ) {
-      const selectedDate = datesArray[selectedDateIndex].date;
-      const selectedTime = datesArray[selectedDateIndex].times[selectedTimeIndex].time;
-      navigate(`/movies/${id}/book`, {
-        state: { date: selectedDate, time: selectedTime },
-      });
-    }
-  };
+  if (selectedDateIndex !== null && datesArray[selectedDateIndex]) {
+    const selectedDate = datesArray[selectedDateIndex].date;
+    const firstAvailableTime =
+      datesArray[selectedDateIndex].times?.[0]?.time || "00:00"; // fallback if no time
+
+    navigate(`/movies/${id}/${selectedDate}/${firstAvailableTime}`);
+  }
+};
 
   return (
     <div className="px-6 md:px-16 lg:px-40 pt-10 md:pt-20 mt-20 text-white">

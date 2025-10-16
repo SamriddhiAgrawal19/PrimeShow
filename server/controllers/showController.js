@@ -124,29 +124,21 @@ export const getShow = async (req, res) => {
   try {
     const { movieId } = req.params;
 
-    // Fetch upcoming shows
     const shows = await Show.find({
-      movieId : movieId,
-      showDateTime: { $gte: new Date() }
-    })
+      movieId,
+      showDateTime: { $gte: new Date() },
+    });
 
-    //.log(shows)
-
-    // Fetch movie details
-    const movie = await Movie.findById(movieId);
+    const movie = await Movie.findOne({ _id: movieId });
     if (!movie) {
-      return res.status(404).json({ message: "Movie not found" });
+      return res.status(404).json({ success: false, message: "Movie not found" });
     }
 
-    // Group shows by date
     const datesArray = [];
 
     shows.forEach((show) => {
-      // Ensure showDateTime is a Date object
       const showDate = new Date(show.showDateTime);
-
-
-      const dateStr = showDate.toISOString().split("T")[0]; // YYYY-MM-DD
+      const dateStr = showDate.toISOString().split("T")[0];
 
       let dateObj = datesArray.find((d) => d.date === dateStr);
       if (!dateObj) {
@@ -155,15 +147,12 @@ export const getShow = async (req, res) => {
       }
 
       dateObj.times.push({
-        time: showDate.toISOString(), // use ISO for now
+        time: showDate.toISOString(),
         showId: show._id,
         showPrice: show.showPrice,
         occupiedSeats: show.occupiedSeats,
       });
     });
-
-    console.log(datesArray);
-    
 
     return res.json({ success: true, movie, dateTime: datesArray });
   } catch (error) {
@@ -171,3 +160,4 @@ export const getShow = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+

@@ -8,25 +8,36 @@ import { toast } from "react-hot-toast";
 
 const MyBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
-  const { axios } = useAppContext();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { axios, getToken } = useAppContext();
 
   const getMyBookings = async () => {
-    try {
-      const { data } = await axios.get("/api/user/bookings");
-      if (data.success) {
-        setBookings(data.bookings);
-      } else {
-        toast.error("Failed to fetch bookings");
-      }
-    } catch (err) {
-      console.error("Error fetching bookings:", err);
-      toast.error(err.response?.data?.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+   
+    const token = await getToken();
+
+    
+    const { data } = await axios.get("/api/user/bookings", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (data.success) {
+      setBookings(data.bookings);
+    } else {
+      toast.error("Failed to fetch bookings");
     }
-  };
+  } catch (err) {
+    console.error("Error fetching bookings:", err);
+    toast.error(err.response?.data?.message || "Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     getMyBookings();

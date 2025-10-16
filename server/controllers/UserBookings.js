@@ -1,32 +1,39 @@
 import { clerkClient } from "@clerk/express";
 import Booking from "../models/bookings.js";
 import Movie from "../models/Movie.js";
+import Show from "../models/Show.js";
 
 export const getUserBookings = async (req, res) => {
   try {
     const auth = req.auth();
     const userId = auth?.userId;
-    console.log("User ID:", userId);
-
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const bookings = await Booking.find({ user: userId })
-      .populate({
-        path: "show",
-        populate: { path: "movie" },
-      })
-      .sort({ createdAt: -1 });
+    const bookings = await Booking.find({ user: userId }).sort({ createdAt: -1 });
 
-    res.json({ success: true, bookings });
+    // Manually attach movie details
+    const bookingsWithMovie = await Promise.all(
+      bookings.map(async (booking) => {
+        const show = await Show.findById(booking.show);
+        const movie = await Movie.findById(show.movieId).select("title poster_path runtime");
+        return {
+          ...booking.toObject(),
+          show: {
+            ...show.toObject(),
+            movie
+          }
+        };
+      })
+    );
+
+    res.json({ success: true, bookings: bookingsWithMovie });
   } catch (err) {
-    console.log(err.message);
+    console.error("getUserBookings error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
-
 export const addFavourite = async(req, res)=>{
     try{
         const {movieId} = req.body;
