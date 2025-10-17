@@ -33,21 +33,27 @@ export const getDashboardData = async (req, res) => {
   }
 };
 
-export const getAllShows = async(req, res)=>{
-    try{
-        const shows = (await Show.find({showDateTime : {$gte : new Date()}}).populate('movie')).sort({showDateTime : 1});
-        res.json({success : true , shows});
-    }catch(err){
-        console.error(err);
-        res.json({success : false , message : "Internal Server Error"});
-    }
-}
+export const getAllShows = async (req, res) => {
+  try {
+    const shows = await Show.find({
+      showDateTime: { $gte: new Date() },
+    })
+      .sort({ showDateTime: 1 })
+      .populate("movieId");
+
+    res.json({ success: true, shows });
+  } catch (err) {
+    console.error("Error in getAllShows:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
 
 export const getAllBookings = async(req, res)=>{
     try{
         const bookings = await Booking.find({}).populate('user').populate({
             path : "show",
-            populate : {path : "movie"}
+            populate : {path : "movieId"}
 
         }).sort({createdAt : -1});
         res.json({success : true , bookings});
