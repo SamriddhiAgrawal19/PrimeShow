@@ -68,8 +68,8 @@ export const createBooking = async (req, res) => {
     ];
 
     const session = await stripeInstance.checkout.sessions.create({
-      success_url: `${process.env.FRONTEND_URL}/loading/my-bookings`,
-      cancel_url: `${process.env.FRONTEND_URL}/my-bookings`,
+       success_url: `${process.env.FRONTEND_URL}/session-success?bookingId=${booking._id}`,
+  cancel_url: `${process.env.FRONTEND_URL}/my-bookings`,
       line_items,
       mode: "payment",
       metadata: {
@@ -100,5 +100,30 @@ export const getOccupiedSeats = async(req , res)=>{
         res.status(500).json({ message: "Internal server error" });
     }
 };
+export const confirmBookingPayment = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+
+    if (!bookingId) {
+      return res.status(400).json({ success: false, message: "Booking ID is required" });
+    }
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+
+    // ✅ Mark as paid
+    booking.isPaid = true;
+    booking.status = "completed"; // optional: mark completed
+    await booking.save();
+
+    return res.json({ success: true, message: "Booking payment confirmed", booking });
+  } catch (err) {
+    console.error("confirmBookingPayment error:", err);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 
     

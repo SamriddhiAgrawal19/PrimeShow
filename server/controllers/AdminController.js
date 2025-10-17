@@ -10,21 +10,26 @@ export const isAdmin = (req, res)=>{
 export const getDashboardData = async (req, res) => {
   try {
     const bookings = await Booking.find({ isPaid: true });
-    const activeShows = await Show.find({ showDateTime: { $gte: new Date() } }).populate('movie');
 
-    const totalUser = await User.countDocuments();
+    const activeShows = await Show.find({ showDateTime: { $gte: new Date() } })
+      .populate('movieId')
+      .sort({ showDateTime: 1 });
+
+    const totalUsers = await User.countDocuments();
+
+    const totalRevenue = bookings.reduce((acc, booking) => acc + (booking.amount || 0), 0);
 
     const dashboardData = {
       totalBookings: bookings.length,
-      totalRevenue: bookings.reduce((acc, booking) => acc + (booking.amount || 0), 0),
-      activeShows: activeShows || [],
-      totalUser: totalUser || 0,
+      totalRevenue,
+      totalUsers,
+      activeShows,
     };
 
-    res.json({ success: true, dashboardData });
+    return res.json({ success: true, dashboardData });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false, message: "Internal Server Error" });
+    console.error("Dashboard fetch error:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 

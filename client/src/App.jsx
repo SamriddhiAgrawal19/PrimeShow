@@ -16,6 +16,7 @@ import AddShows from './pages/admin/AddShows'
 import ListBooking from './pages/admin/ListBooking'
 import Listshows from './pages/admin/Listshows'
 import Loading from './components/Loading'
+import SessionSuccess from './components/Sessionsuccess'
 //import TestToken from './components/testToken'
 
 const App = () => {
@@ -30,7 +31,7 @@ const App = () => {
         <Route path='/movie/:id' element={<MovieDetails />} />
         <Route path='/movies/:id/:date/:time' element={<SeatLayout />} />
         <Route path='/my-bookings' element={<MyBookings />} />
-         <Route path='/loading/:nextUrl' element={<Loading/>} />
+        <Route path="/session-success" element={<SessionSuccess />} />
         <Route path='/favourite' element={<Favourite />} />
         <Route path = '/admin/*' element = {<Layout />  } >
           <Route index element = {<Dashboard />} />

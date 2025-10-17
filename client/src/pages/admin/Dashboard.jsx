@@ -26,6 +26,7 @@ const Dashboard = () => {
  const fetchDashboardData = async () => {
   try {
     const token = await getToken();
+
     const { data: dashboardRes } = await axios.get('/api/admin/dashboard', {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -33,20 +34,25 @@ const Dashboard = () => {
     const { data: moviesRes } = await axios.get("/api/shows/now-playing");
 
     if (dashboardRes?.success && moviesRes?.success) {
+
+      console.log(dashboardRes);
+      console.log(moviesRes);
+      
+
       setDashboard({
         totalRevenue: dashboardRes.dashboardData?.totalRevenue || 0,
         totalBookings: dashboardRes.dashboardData?.totalBookings || 0,
         totalUsers: dashboardRes.dashboardData?.totalUser || 0,
-        activeShows: moviesRes.movies || [], // now playing movies
+        activeShows: moviesRes.movies || [],
       });
     }
+
     setLoading(false);
   } catch (err) {
     console.error("Dashboard fetch error:", err);
     setLoading(false);
   }
 };
-
 
   useEffect(() => {
     fetchDashboardData();

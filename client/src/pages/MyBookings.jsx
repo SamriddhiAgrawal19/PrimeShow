@@ -5,7 +5,7 @@ import timeFormat from "../lib/timeFormat";
 import dateFormat from "../lib/DateFormat";
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
-
+import { Link } from "react-router-dom";
 const MyBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
   const [bookings, setBookings] = useState([]);
@@ -97,9 +97,9 @@ const MyBookings = () => {
                     {amount}
                   </p>
                   {!isPaid && (
-                    <button className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition">
+                    <Link to = {item.paymentLink}className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition">
                       Pay Now
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>

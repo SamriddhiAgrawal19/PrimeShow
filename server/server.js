@@ -13,7 +13,7 @@ import userRouter from "./routes/userRoutes.js";
 
 dotenv.config();
 
-console.log("TMDB API Key:", process.env.TMDB_API_KEY)
+
 
 const app = express();
 const port = 3000;
@@ -37,6 +37,7 @@ const startServer = async () => {
     app.use("/api/booking", bookingRouter);
     app.use("/api/admin", AdminRouter);
     app.use("/api/user", userRouter);
+  
     app.use(
       "/api/inngest",
       serve({
