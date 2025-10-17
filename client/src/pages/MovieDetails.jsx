@@ -7,6 +7,7 @@ import MovieCard from "../components/MovieCard";
 import Loading from "../components/Loading";
 import { dummyShowsData } from "../assets/assets";
 import { useAppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
 
 const MovieDetails = () => {
   const { id } = useParams();
@@ -56,17 +57,24 @@ const MovieDetails = () => {
     }
   };
 
-  const toggleFavourite = async () => {
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(`/api/user/add-favourites?movieId=${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (data.success) setIsFavourite(!isFavourite);
-    } catch (err) {
-      console.error("Error updating favourite:", err);
+ const toggleFavourite = async (movieId) => {
+  try {
+    const token = await getToken();
+    const { data } = await axios.post(
+      `/api/user/add-favourites`,
+      { movieId }, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (data.success) {
+      setIsFavourite(!isFavourite);
+      toast.success("Movie added to favourites!");
+       navigate("/favourite");
     }
-  };
+  } catch (err) {
+    console.error("Error updating favourite:", err);
+  }
+};
+
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "Invalid date";
@@ -192,16 +200,18 @@ const MovieDetails = () => {
               Book Now
             </button>
 
-            <button
-              onClick={toggleFavourite}
-              className={`w-10 h-10 flex items-center justify-center rounded-full transition ${
-                isFavourite
-                  ? "bg-primary text-black"
-                  : "bg-gray-800 hover:bg-gray-700 text-white"
-              }`}
-            >
-              <Heart className="w-5 h-5" />
-            </button>
+          <button
+  onClick={() => toggleFavourite(show.movie._id)}
+  className={`w-10 h-10 flex items-center justify-center rounded-full transition ${
+    isFavourite
+      ? "bg-primary text-black"
+      : "bg-gray-800 hover:bg-gray-700 text-white"
+  }`}
+>
+  <Heart className="w-5 h-5" />
+</button>
+
+
           </div>
         </div>
       </div>
