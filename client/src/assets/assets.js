@@ -16,8 +16,6 @@ export const assets = {
     screenImage,
     profile,
     logo1,
-    harryPotterLogo,
-    Harry_potter_wordmark
 }
 
 export const dummyTrailers = [
