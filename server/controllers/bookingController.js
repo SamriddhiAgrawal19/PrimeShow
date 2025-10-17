@@ -1,7 +1,7 @@
 
 import Show from "../models/Show.js";
 import Booking from "../models/bookings.js";
-import Stripe from "Stripe";
+import Stripe from "stripe";
 import dotenv from 'dotenv'
 dotenv.config()
 
