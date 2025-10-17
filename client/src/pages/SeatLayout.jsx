@@ -89,8 +89,8 @@ const SeatLayout = () => {
     );
 
     if (data.success) {
-      toast.success("Booking created successfully!");
-      navigate("/my-bookings");
+     window.location.href = data.url;
+     
     }
   } catch (err) {
     console.error("Booking error:", err.response?.data || err.message);
